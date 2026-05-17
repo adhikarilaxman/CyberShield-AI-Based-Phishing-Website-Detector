@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<title>Reports | CyberShield</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "primary-fixed-dim": "#4ae176",
+                  "on-primary-container": "#004b1e",
+                  "tertiary-container": "#ef9900",
+                  "secondary-fixed-dim": "#adc6ff",
+                  "surface-container-low": "#131b2e",
+                  "on-primary-fixed-variant": "#005321",
+                  "on-surface": "#dae2fd",
+                  "inverse-primary": "#006e2f",
+                  "on-tertiary-container": "#5c3800",
+                  "on-secondary-container": "#e6ecff",
+                  "surface-container-highest": "#2d3449",
+                  "surface-dim": "#0b1326",
+                  "on-error-container": "#ffdad6",
+                  "on-tertiary-fixed": "#2a1700",
+                  "tertiary-fixed-dim": "#ffb95f",
+                  "secondary-fixed": "#d8e2ff",
+                  "on-error": "#690005",
+                  "background": "#0b1326",
+                  "surface": "#0b1326",
+                  "surface-variant": "#2d3449",
+                  "primary-fixed": "#6bff8f",
+                  "secondary-container": "#0566d9",
+                  "on-secondary-fixed": "#001a42",
+                  "surface-bright": "#31394d",
+                  "tertiary": "#ffba61",
+                  "on-tertiary-fixed-variant": "#653e00",
+                  "on-background": "#dae2fd",
+                  "on-secondary": "#002e6a",
+                  "on-surface-variant": "#bccbb9",
+                  "on-primary": "#003915",
+                  "inverse-on-surface": "#283044",
+                  "outline-variant": "#3d4a3d",
+                  "surface-tint": "#4ae176",
+                  "secondary": "#adc6ff",
+                  "primary-container": "#22c55e",
+                  "tertiary-fixed": "#ffddb8",
+                  "error": "#ffb4ab",
+                  "surface-container": "#171f33",
+                  "inverse-surface": "#dae2fd",
+                  "on-secondary-fixed-variant": "#004395",
+                  "primary": "#4be277",
+                  "surface-container-high": "#222a3d",
+                  "on-tertiary": "#472a00",
+                  "surface-container-lowest": "#060e20",
+                  "on-primary-fixed": "#002109",
+                  "outline": "#869585",
+                  "error-container": "#93000a"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "gutter": "20px",
+                  "container-max": "1200px",
+                  "xl": "48px",
+                  "base": "4px",
+                  "xs": "8px",
+                  "lg": "32px",
+                  "md": "24px",
+                  "sm": "16px"
+          },
+          "fontFamily": {
+                  "headline-xl": ["Plus Jakarta Sans"],
+                  "label-caps": ["Inter"],
+                  "body-md": ["Inter"],
+                  "headline-lg": ["Plus Jakarta Sans"],
+                  "data-mono": ["JetBrains Mono"]
+          },
+          "fontSize": {
+                  "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                  "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .glass-card {
+      background: rgba(23, 31, 51, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .row-animate {
+      animation: fadeInRow 0.4s ease-out both;
+    }
+    @keyframes fadeInRow {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .table-row:hover { background: rgba(255,255,255,0.03); }
+  </style>
+<style>
+    body { min-height: 100dvh; }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+
+<!-- Header -->
+<header class="flex justify-between items-center w-full px-md md:px-lg h-20 fixed top-0 z-50 bg-surface-container dark:bg-surface-container-low/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm">
+  <div class="flex items-center gap-sm">
+    <span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim text-headline-lg">shield</span>
+    <a href="/" class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">CyberShield</a>
+  </div>
+  <div class="hidden md:flex items-center gap-lg">
+    <nav class="flex gap-md">
+      <a class="font-body-md text-on-surface-variant hover:text-primary transition-colors duration-200 py-1" href="/">Scanner</a>
+      <a class="font-body-md text-primary dark:text-primary-fixed-dim border-b-2 border-primary py-1" href="/reports">Reports</a>
+    </nav>
+  </div>
+  <a href="/" class="md:hidden material-symbols-outlined text-on-surface">arrow_back</a>
+</header>
+
+<!-- Main Content -->
+<main class="flex-grow mt-20 px-md py-xl max-w-[1200px] mx-auto w-full">
+
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-start justify-between gap-md mb-lg">
+    <div>
+      <h2 class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-xs">
+        <span class="material-symbols-outlined text-error text-[32px]">analytics</span>
+        Threat Reports
+      </h2>
+      <p class="font-body-md text-on-surface-variant/70 mt-xs">Full history of all URLs scanned this session.</p>
+    </div>
+    <!-- Stats Row + Export Button -->
+    <div class="flex flex-col gap-md items-end">
+      <div class="flex gap-md flex-wrap justify-end">
+        <div class="glass-card rounded-lg px-md py-sm flex flex-col items-center min-w-[90px]">
+          <span class="font-data-mono text-xl font-bold text-on-surface">{{ total }}</span>
+          <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">Total</span>
+        </div>
+        <div class="glass-card rounded-lg px-md py-sm flex flex-col items-center min-w-[90px]">
+          <span class="font-data-mono text-xl font-bold text-error">{{ critical }}</span>
+          <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">Critical</span>
+        </div>
+        <div class="glass-card rounded-lg px-md py-sm flex flex-col items-center min-w-[90px]">
+          <span class="font-data-mono text-xl font-bold text-tertiary">{{ suspicious }}</span>
+          <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">Suspicious</span>
+        </div>
+        <div class="glass-card rounded-lg px-md py-sm flex flex-col items-center min-w-[90px]">
+          <span class="font-data-mono text-xl font-bold text-primary">{{ safe }}</span>
+          <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">Safe</span>
+        </div>
+      </div>
+      {% if total > 0 %}
+      <a href="/export"
+         class="inline-flex items-center gap-xs bg-primary-container text-on-primary font-label-caps px-md py-sm rounded-lg hover:opacity-90 active:scale-95 transition-all duration-200 shadow-lg"
+         style="box-shadow: 0 4px 16px rgba(34,197,94,0.25);">
+        <span class="material-symbols-outlined text-[18px]">download</span>
+        Export to Excel
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  {% if total > 0 %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-md mb-lg">
+
+    <!-- Doughnut Chart -->
+    <div class="glass-card rounded-xl p-md flex flex-col items-center">
+      <h3 class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest mb-md self-start">Scan Breakdown</h3>
+      <div class="relative w-[200px] h-[200px]">
+        <canvas id="doughnutChart"></canvas>
+        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span class="font-data-mono text-2xl font-bold text-on-surface">{{ total }}</span>
+          <span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Total</span>
+        </div>
+      </div>
+      <div class="flex gap-md mt-md text-[12px]">
+        <div class="flex items-center gap-xs"><span class="w-2.5 h-2.5 rounded-full bg-[#ffb4ab] inline-block"></span><span class="text-on-surface-variant">Critical ({{ critical }})</span></div>
+        <div class="flex items-center gap-xs"><span class="w-2.5 h-2.5 rounded-full bg-[#ffba61] inline-block"></span><span class="text-on-surface-variant">Suspicious ({{ suspicious }})</span></div>
+        <div class="flex items-center gap-xs"><span class="w-2.5 h-2.5 rounded-full bg-[#4be277] inline-block"></span><span class="text-on-surface-variant">Safe ({{ safe }})</span></div>
+      </div>
+    </div>
+
+    <!-- Bar Chart -->
+    <div class="glass-card rounded-xl p-md">
+      <h3 class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest mb-md">Status Comparison</h3>
+      <div class="h-[220px]">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
+
+  <!-- Reports Table -->
+  {% if reports %}
+  <div class="glass-card rounded-xl overflow-hidden">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="border-b border-outline-variant/20 bg-surface-container-high/60">
+          <th class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest px-md py-sm">#</th>
+          <th class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest px-md py-sm">Tracking ID</th>
+          <th class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest px-md py-sm">Domain / URL</th>
+          <th class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest px-md py-sm">Status</th>
+          <th class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest px-md py-sm">Confidence</th>
+          <th class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest px-md py-sm">Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in reports %}
+        <tr class="table-row border-b border-outline-variant/10 row-animate" style="animation-delay: {{ loop.index0 * 0.04 }}s">
+          <td class="font-data-mono text-on-surface-variant/50 px-md py-sm text-[13px]">{{ loop.index }}</td>
+          <td class="font-data-mono text-on-surface-variant/70 px-md py-sm text-[13px]">{{ report.id }}</td>
+          <td class="px-md py-sm">
+            <span class="font-body-md text-[14px] text-on-surface truncate block max-w-[260px]" title="{{ report.domain }}">{{ report.domain }}</span>
+            <span class="font-label-caps text-[10px] text-on-surface-variant/50">{{ report.prediction }}</span>
+          </td>
+          <td class="px-md py-sm">
+            {% if report.status == 'CRITICAL' %}
+              <span class="inline-flex items-center gap-1 bg-error/10 text-error px-xs py-0.5 rounded font-label-caps text-[10px]">
+                <span class="material-symbols-outlined text-[12px]" style="font-size:12px">warning</span> CRITICAL
+              </span>
+            {% elif report.status == 'SUSPICIOUS' %}
+              <span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-xs py-0.5 rounded font-label-caps text-[10px]">
+                <span class="material-symbols-outlined text-[12px]" style="font-size:12px">help</span> SUSPICIOUS
+              </span>
+            {% else %}
+              <span class="inline-flex items-center gap-1 bg-primary/10 text-primary px-xs py-0.5 rounded font-label-caps text-[10px]">
+                <span class="material-symbols-outlined text-[12px]" style="font-size:12px">verified</span> SAFE
+              </span>
+            {% endif %}
+          </td>
+          <td class="px-md py-sm">
+            <div class="flex items-center gap-xs">
+              <div class="w-20 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+                <div class="h-full rounded-full {% if report.status == 'CRITICAL' %}bg-error{% elif report.status == 'SUSPICIOUS' %}bg-tertiary{% else %}bg-primary{% endif %}"
+                     style="width: {{ report.confidence }}%"></div>
+              </div>
+              <span class="font-data-mono text-[12px] text-on-surface-variant">{{ report.confidence }}%</span>
+            </div>
+          </td>
+          <td class="font-data-mono text-[12px] text-on-surface-variant/60 px-md py-sm">{{ report.time }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="glass-card rounded-xl flex flex-col items-center justify-center py-[80px] text-center gap-md">
+    <span class="material-symbols-outlined text-[64px] text-on-surface-variant/30">manage_search</span>
+    <p class="font-headline-lg text-[20px] text-on-surface-variant/50">No reports yet</p>
+    <p class="font-body-md text-on-surface-variant/40">Scan a URL from the scanner to see results here.</p>
+    <a href="/" class="mt-md inline-flex items-center gap-xs bg-primary-container text-on-primary font-label-caps px-md py-sm rounded-lg hover:opacity-90 transition-opacity">
+      <span class="material-symbols-outlined text-[18px]">bolt</span> Go to Scanner
+    </a>
+  </div>
+  {% endif %}
+
+</main>
+
+<!-- Footer -->
+<footer class="flex justify-center items-center w-full py-lg px-xl bg-surface-container-lowest border-t border-outline-variant/10">
+  <div class="flex items-center gap-sm">
+    <span class="material-symbols-outlined text-primary">shield</span>
+    <p class="font-label-caps text-on-surface-variant/60">© 2026 CyberShield AI. Secured by End-to-End Encryption.</p>
+  </div>
+</footer>
+
+<!-- Chart data injected safely as JSON — no Jinja2 inside script tags -->
+<div id="chartData"
+     data-critical="{{ critical }}"
+     data-suspicious="{{ suspicious }}"
+     data-safe="{{ safe }}"
+     style="display:none">
+</div>
+
+<script>
+  const chartEl   = document.getElementById('chartData');
+  const critical  = parseInt(chartEl.dataset.critical,  10);
+  const suspicious= parseInt(chartEl.dataset.suspicious,10);
+  const safe      = parseInt(chartEl.dataset.safe,      10);
+
+  const gridColor = 'rgba(255,255,255,0.06)';
+  const textColor = '#bccbb9';
+
+  // Doughnut
+  const dCtx = document.getElementById('doughnutChart');
+  if (dCtx) {
+    new Chart(dCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Critical', 'Suspicious', 'Safe'],
+        datasets: [{
+          data: [critical, suspicious, safe],
+          backgroundColor: ['#ffb4ab', '#ffba61', '#4be277'],
+          borderColor: 'rgba(23,31,51,0.9)',
+          borderWidth: 3,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        cutout: '70%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}` } }
+        },
+        animation: { animateRotate: true, duration: 900 }
+      }
+    });
+  }
+
+  // Bar
+  const bCtx = document.getElementById('barChart');
+  if (bCtx) {
+    new Chart(bCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Critical', 'Suspicious', 'Safe'],
+        datasets: [{
+          label: 'Scans',
+          data: [critical, suspicious, safe],
+          backgroundColor: ['rgba(255,180,171,0.7)', 'rgba(255,186,97,0.7)', 'rgba(75,226,119,0.7)'],
+          borderColor: ['#ffb4ab', '#ffba61', '#4be277'],
+          borderWidth: 1.5,
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, stepSize: 1 }, beginAtZero: true }
+        },
+        animation: { duration: 900 }
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

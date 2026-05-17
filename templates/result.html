@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <title>Result - CyberShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container result-container">
+        <div class="card result-card">
+            <h2>Analysis Report</h2>
+            <div class="url-display">{{ url }}</div>
+            
+            {% if prediction == 'Phishing' %}
+                <div class="badge badge-danger">
+                    ⚠️ PHISHING
+                </div>
+            {% else %}
+                <div class="badge badge-success">
+                    ✅ LEGITIMATE
+                </div>
+            {% endif %}
+            
+            <div class="confidence-section">
+                <p>AI Confidence: <span class="confidence-val">{{ confidence }}%</span></p>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar {% if prediction == 'Phishing' %}bg-danger{% else %}bg-success{% endif %}" 
+                         style="width: 0%" 
+                         data-width="{{ confidence }}%">
+                    </div>
+                </div>
+            </div>
+
+            {% if rb_reasons %}
+            <div class="ssl-card" style="border-color: {% if prediction == 'Phishing' %}#f8514940{% else %}#3fb95040{% endif %};">
+                <h3 style="color: {% if prediction == 'Phishing' %}#f85149{% else %}#3fb950{% endif %};">
+                    {% if prediction == 'Phishing' %}⚠️ Phishing Signals Detected (Score: {{ rb_score }}){% else %}🛡️ Risk Signals (Score: {{ rb_score }}){% endif %}
+                </h3>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for reason in rb_reasons %}
+                    <li style="padding: 6px 0; border-bottom: 1px solid #21262d; font-size: 0.88rem; color: {% if prediction == 'Phishing' %}#f85149{% else %}#d29922{% endif %};">
+                        ● {{ reason }}
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <h3>Extracted Features</h3>
+            <table class="features-table">
+                <tbody>
+                    {% for key, value in features.items() %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td class="value-cell {% if value == 'Yes' %}highlight-yes{% endif %}">{{ value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div class="ssl-card">
+              <h3>SSL Certificate Details</h3>
+              <table class="features-table">
+                <tr>
+                  <td>HTTPS</td>
+                  <td class="{{ 'safe' if ssl.has_https else 'danger' }}">
+                    {{ 'Yes' if ssl.has_https else 'No' }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Certificate found</td>
+                  <td class="{{ 'safe' if ssl.cert_found else 'danger' }}">
+                    {{ 'Yes' if ssl.cert_found else 'No' }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Issuer</td>
+                  <td class="value-cell">{{ ssl.issuer }}</td>
+                </tr>
+                <tr>
+                  <td>Self-signed</td>
+                  <td class="{{ 'danger' if ssl.is_self_signed else 'safe' }}">
+                    {{ 'Yes (suspicious)' if ssl.is_self_signed else 'No' }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Days until expiry</td>
+                  <td class="{{ 'danger' if ssl.is_expired else ('warn' if ssl.expiring_soon else 'safe') }}">
+                    {% if ssl.days_remaining is not none %}
+                      {{ ssl.days_remaining }} days
+                      {% if ssl.is_expired %} (EXPIRED){% elif ssl.expiring_soon %} (expiring soon){% endif %}
+                    {% else %}
+                      N/A
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Domain matches cert</td>
+                  <td class="{{ 'safe' if ssl.domain_match else 'danger' }}">
+                    {{ 'Yes' if ssl.domain_match else 'No (mismatch!)' }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>SSL risk score</td>
+                  <td class="{{ 'safe' if ssl.ssl_risk_score == 0 else 'danger' }}">
+                    {{ ssl.ssl_risk_score }} / 4
+                  </td>
+                </tr>
+                {% if ssl.error %}
+                <tr>
+                  <td>Note</td>
+                  <td class="warn">{{ ssl.error }}</td>
+                </tr>
+                {% endif %}
+              </table>
+            </div>
+            
+            <div class="ssl-card">
+              <h3>🌐 WHOIS Domain Intelligence</h3>
+              <table class="features-table">
+                <tr>
+                  <td>Domain</td>
+                  <td class="value-cell">{{ whois.domain or 'Unknown' }}</td>
+                </tr>
+                <tr>
+                  <td>Registrar</td>
+                  <td class="value-cell">{{ whois.registrar }}</td>
+                </tr>
+                <tr>
+                  <td>Country</td>
+                  <td class="value-cell">{{ whois.country }}</td>
+                </tr>
+                <tr>
+                  <td>Domain Age</td>
+                  <td class="{{ 'danger' if whois.is_new_domain else 'safe' }}">
+                    {{ whois.domain_age_str }}
+                    {% if whois.is_new_domain %} ⚠️ (new — suspicious){% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Created On</td>
+                  <td class="value-cell">{{ whois.creation_date or 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <td>Expires On</td>
+                  <td class="value-cell">{{ whois.expiration_date or 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <td>WHOIS Risk Score</td>
+                  <td class="{{ 'safe' if whois.whois_risk_score == 0 else 'danger' }}">
+                    {{ whois.whois_risk_score }} / 1
+                  </td>
+                </tr>
+                {% if whois.error %}
+                <tr>
+                  <td>Note</td>
+                  <td class="warn">{{ whois.error }}</td>
+                </tr>
+                {% endif %}
+              </table>
+            </div>
+
+            <a href="/" class="btn-back">Check Another URL</a>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
